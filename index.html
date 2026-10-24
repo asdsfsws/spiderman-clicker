@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Spider-Man Clicker: Boss Battle</title>
+<style>
+:root{--bg:#050816;--panel:#0b1227;--panel2:#111a35;--blue:#28d9ff;--red:#ff254f;--gold:#ffd35a;--line:#263b68;--text:#f4f7ff;--muted:#9db0d7}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 50% 35%,#24112b 0%,#0a1025 42%,#03050d 100%);color:var(--text);font-family:Arial,"Malgun Gothic",sans-serif;min-height:100vh;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.25;background:linear-gradient(transparent 96%,#243a67 97%),linear-gradient(90deg,transparent 96%,#243a67 97%);background-size:44px 44px;mask-image:linear-gradient(to bottom,transparent,#000)}
+button{font:inherit;color:inherit;cursor:pointer}
+button:disabled{opacity:.45;cursor:not-allowed}
+.topbar{position:relative;z-index:2;display:grid;grid-template-columns:minmax(230px,1.1fr) minmax(300px,2fr) auto;gap:16px;align-items:center;padding:12px 18px;background:#070d1fee;border-bottom:1px solid #29416f;box-shadow:0 8px 35px #0008}
+.logo{display:flex;align-items:center;gap:10px;font-weight:1000;font-style:italic;letter-spacing:2px;color:#ff365d;text-shadow:0 0 18px #ff174b;font-size:clamp(18px,2vw,27px)}
+.logo img{width:48px;height:48px;object-fit:contain;border-radius:50%;border:2px solid #ff3156;background:#0c1631}
+.logo small{display:block;font-size:10px;letter-spacing:5px;color:white;text-align:center}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(65px,1fr));gap:8px;padding:9px 13px;border:1px solid #2c477b;border-radius:14px;background:linear-gradient(120deg,#0b1530,#101a35)}
+.stat-label{font-size:11px;color:var(--muted)}.stat-value{font-weight:900;font-size:clamp(15px,1.6vw,22px);margin-top:4px}.coin{color:var(--gold)}
+.top-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}
+.small-btn,.action-btn{border:1px solid #36558b;background:linear-gradient(#15284c,#0b1530);border-radius:9px;padding:9px 11px;font-weight:800}.small-btn:hover,.action-btn:hover{border-color:var(--blue);box-shadow:0 0 15px #28d9ff44}
+.layout{display:grid;grid-template-columns:minmax(210px,260px) minmax(350px,1fr) minmax(205px,260px);gap:12px;padding:12px;max-width:1800px;margin:auto}
+.column{display:flex;flex-direction:column;gap:12px;min-width:0}
+.panel{background:linear-gradient(145deg,#0d1630f2,#070d1df7);border:1px solid var(--line);border-radius:15px;padding:12px;box-shadow:0 12px 35px #0005;min-width:0}
+.panel h2{font-size:15px;margin:0 0 12px;letter-spacing:.4px;display:flex;align-items:center;gap:8px}
+.upgrade{display:grid;grid-template-columns:36px 1fr auto;gap:8px;align-items:center;padding:10px;margin:7px 0;border:1px solid #253c68;border-radius:11px;background:#0c1730}
+.up-icon{font-size:25px}.upgrade strong{font-size:13px}.upgrade small{display:block;color:var(--muted);font-size:11px;margin-top:5px;line-height:1.5}.price-btn{padding:8px;border-radius:8px;background:#18284a;border:1px solid #48689e;color:var(--gold);font-weight:900;font-size:12px}
+.progress{height:7px;background:#1a2947;border-radius:10px;overflow:hidden;margin:8px 0}.progress span{height:100%;display:block;background:linear-gradient(90deg,#13cfff,#7d58ff);transition:width .25s}
+.mission{padding:10px;margin:8px 0;background:#0b1730;border:1px solid #223960;border-radius:10px}.mission-head{display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:800}.mission small{color:var(--muted)}
+.claim{width:100%;margin-top:8px;background:linear-gradient(90deg,#214a8e,#5937ac);border:1px solid #588bff;border-radius:9px;padding:9px;font-weight:900}
+.center{gap:12px}
+.arena{height:clamp(440px,53vw,620px);position:relative;overflow:hidden;border-radius:18px;border:1px solid #6a2859;background:radial-gradient(ellipse at 72% 52%,#5d1237 0%,#24102d 28%,#10152c 63%,#070c1b 100%);box-shadow:inset 0 0 70px #f31c4a1c,0 0 30px #e11b4d15}
+.city{position:absolute;inset:auto 0 0;height:45%;opacity:.65;background:linear-gradient(to top,#030611,transparent),repeating-linear-gradient(90deg,transparent 0 26px,#0c1830 27px 48px,transparent 49px 69px);clip-path:polygon(0 40%,5% 40%,5% 15%,10% 15%,10% 50%,16% 50%,16% 5%,22% 5%,22% 30%,27% 30%,27% 0,35% 0,35% 38%,43% 38%,43% 18%,48% 18%,48% 48%,56% 48%,56% 10%,62% 10%,62% 33%,69% 33%,69% 0,77% 0,77% 42%,84% 42%,84% 20%,90% 20%,90% 45%,100% 45%,100% 100%,0 100%)}
+.arena:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(115deg,transparent 35%,#ff234f0d 50%,transparent 65%),radial-gradient(ellipse at 50% 50%,transparent 30%,#0205109c 100%)}
+.boss-card{position:absolute;z-index:3;left:14px;top:14px;width:min(380px,calc(100% - 28px));padding:12px;display:grid;grid-template-columns:46px 1fr;gap:10px;background:#050a18dd;border:1px solid var(--red);border-radius:13px;box-shadow:0 0 24px #ff174b24}
+.boss-mini{width:46px;height:46px;object-fit:contain;border-radius:8px;background:#15162b}
+.boss-name{font-weight:1000;color:#ff7893}.hp-label{font-size:11px;color:#c6d2ed;margin-top:6px}.hpbar{height:13px;background:#342137;border:1px solid #73344f;border-radius:5px;overflow:hidden;margin-top:5px}.hpbar span{display:block;height:100%;background:linear-gradient(90deg,#ff174b,#ff6177);transition:width .18s}
+.boss-art{position:absolute;right:4%;top:15%;width:min(57%,470px);height:66%;object-fit:contain;filter:drop-shadow(0 0 24px #ff214f88) drop-shadow(0 0 60px #b112ff33);animation:float 3.6s ease-in-out infinite;z-index:2;user-select:none}
+.boss-art.hit{animation:shake .28s linear!important;filter:drop-shadow(0 0 34px #fff) drop-shadow(0 0 60px #ff174b)}
+.boss-placeholder{display:none!important}
+.click-zone{position:absolute;z-index:4;left:4%;bottom:11%;width:clamp(120px,18vw,190px);display:flex;flex-direction:column;align-items:center;gap:8px}
+.click-orb{width:clamp(115px,15vw,165px);height:clamp(115px,15vw,165px);border-radius:50%;border:4px solid #8ceaff;background:radial-gradient(circle at 40% 30%,#366aff,#4a27d9 50%,#100a4d);box-shadow:0 0 15px #13cfff,0 0 38px #633cff,inset 0 0 20px #fff5;display:flex;align-items:center;justify-content:center;position:relative;transition:transform .08s}
+.click-orb:before{content:"";position:absolute;inset:-12px;border:2px solid #6e7dff;border-radius:50%;animation:orbit 5s linear infinite}
+.click-orb:active{transform:scale(.91)}
+.click-skin{width:68%;height:68%;object-fit:contain;filter:drop-shadow(0 0 12px #fff8);position:absolute;top:5%}
+.click-label{position:absolute;bottom:7%;font-size:22px;font-weight:1000;text-shadow:0 2px 8px #000}
+.click-info{text-align:center;font-size:12px;font-weight:800;line-height:1.8;text-shadow:0 2px 5px #000}
+.click-info b{color:var(--gold)}
+.boss-taunt{position:absolute;z-index:3;right:5%;bottom:5%;max-width:45%;text-align:right;color:#ff6685;font-weight:900;text-shadow:0 0 15px #ff174b}
+.boss-taunt small{display:block;color:#e6b6ce;margin-top:7px;font-weight:600}
+.float-text{position:absolute;z-index:9;pointer-events:none;font-weight:1000;font-size:23px;color:var(--gold);text-shadow:0 0 12px #ff5a00,0 2px 5px #000;animation:rise .9s ease-out forwards}
+.bosses{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.boss-choice{min-width:0;padding:8px 4px;border:1px solid #2d4777;background:linear-gradient(#111d3b,#090f21);border-radius:11px;text-align:center;font-size:11px;font-weight:900}
+.boss-choice img{width:100%;height:72px;object-fit:contain;filter:drop-shadow(0 0 8px #f23b5a55)}
+.boss-choice.active{border-color:#ff315c;box-shadow:0 0 18px #ff174b33}
+.boss-choice span{display:block;margin-top:5px}
+.skin-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.skin-card{padding:6px 3px;border:1px solid #315384;border-radius:10px;background:#0b1730;text-align:center;font-size:11px}
+.skin-card img{width:100%;height:58px;object-fit:contain;filter:drop-shadow(0 0 8px #448aff66)}
+.skin-card.selected{border-color:var(--blue);box-shadow:0 0 15px #28d9ff44}
+.skin-card span{display:block;margin-top:4px}
+.right-box{padding:10px;border:1px solid #243b66;border-radius:11px;background:#0b1630;margin-top:8px}
+.right-box strong{font-size:13px}.right-box p{font-size:11px;color:var(--muted);line-height:1.5;margin:5px 0 0}
+.badge{display:inline-block;border:1px solid #35578a;background:#13264a;padding:5px 8px;border-radius:7px;color:#cceaff;font-size:11px;margin:3px}
+.toast{position:fixed;z-index:20;left:50%;top:15%;transform:translateX(-50%);background:#111d39;border:1px solid var(--blue);padding:13px 20px;border-radius:12px;box-shadow:0 0 30px #28d9ff55;font-weight:900;display:none}
+.shake-screen{animation:screenShake .25s linear}
+@keyframes float{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-12px) rotate(1deg)}}
+@keyframes shake{0%,100%{transform:translateX(0) rotate(0)}20%{transform:translateX(-12px) rotate(-3deg)}40%{transform:translateX(10px) rotate(3deg)}60%{transform:translateX(-8px) rotate(-2deg)}80%{transform:translateX(7px) rotate(2deg)}}
+@keyframes orbit{to{transform:rotate(360deg)}}
+@keyframes rise{0%{opacity:0;transform:translateY(0) scale(.7)}15%{opacity:1}100%{opacity:0;transform:translateY(-95px) scale(1.25)}}
+@keyframes screenShake{0%,100%{transform:translate(0)}25%{transform:translate(-4px,2px)}50%{transform:translate(4px,-2px)}75%{transform:translate(-3px,-1px)}}
+@media(max-width:1000px){.topbar{grid-template-columns:1fr}.stats{order:3}.top-actions{justify-content:flex-start}.layout{grid-template-columns:1fr 1fr}.center{grid-column:1/-1;grid-row:1}.left{grid-column:1;grid-row:2}.right{grid-column:2;grid-row:2}}
+@media(max-width:600px){.layout{grid-template-columns:1fr}.center,.left,.right{grid-column:1;grid-row:auto}.arena{height:470px}.boss-art{width:65%;right:0;top:20%}.click-zone{left:3%;bottom:12%}.boss-taunt{max-width:48%;font-size:12px}.bosses{grid-template-columns:repeat(5,minmax(0,1fr))}.boss-choice img{height:48px}.stats{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="logo"><img src="skin1.png" alt="스파이더맨" onerror="this.style.display='none'"><div>SPIDER-MAN<small>CLICKER</small></div></div>
+  <div class="stats">
+    <div><div class="stat-label">🪙 보유 코인</div><div class="stat-value coin" id="coins">0</div></div>
+    <div><div class="stat-label">레벨</div><div class="stat-value" id="level">1</div></div>
+    <div><div class="stat-label">랭크</div><div class="stat-value" id="rank">초보 영웅</div></div>
+    <div><div class="stat-label">총 클릭</div><div class="stat-value" id="clicks">0</div></div>
+  </div>
+  <div class="top-actions">
+    <button class="small-btn" onclick="showAchievements()">🏆 업적</button>
+    <button class="small-btn" onclick="dailyReward()">▣ 출석</button>
+    <button class="small-btn" onclick="resetGame()">⚙ 초기화</button>
+  </div>
+</header>
+<main class="layout">
+  <aside class="column left">
+    <section class="panel"><h2>⚡ 능력 업그레이드</h2>
+      <div class="upgrade"><div class="up-icon">👊</div><div><strong>클릭 강화 Lv.<span id="clickLv">0</span></strong><small>클릭 보상 +1<br>현재 <b id="clickPower">1</b> 코인</small></div><button class="price-btn" id="clickBuy" onclick="buyUpgrade('click')">🪙 50</button></div>
+      <div class="upgrade"><div class="up-icon">🤖</div><div><strong>자동 수입 Lv.<span id="autoLv">0</span></strong><small>초당 +2 코인<br>현재 초당 <b id="autoPower">0</b></small></div><button class="price-btn" id="autoBuy" onclick="buyUpgrade('auto')">🪙 100</button></div>
+      <div class="upgrade"><div class="up-icon">💥</div><div><strong>크리티컬 확률 Lv.<span id="critLv">0</span></strong><small>강력한 공격 확률 증가</small></div><button class="price-btn" id="critBuy" onclick="buyUpgrade('crit')">🪙 150</button></div>
+    </section>
+    <section class="panel"><h2>🎯 오늘의 미션</h2>
+      <div class="mission"><div class="mission-head"><span>🖱️ 100회 클릭</span><span id="mClicks">0/100</span></div><div class="progress"><span id="mClickBar" style="width:0%"></span></div><small>보상 +300 코인</small><button class="claim" id="mClickClaim" onclick="claimMission('clicks')">진행 중</button></div>
+      <div class="mission"><div class="mission-head"><span>🪙 코인 1,000개 획득</span><span id="mCoins">0/1000</span></div><div class="progress"><span id="mCoinBar" style="width:0%"></span></div><small>보상 +500 코인</small><button class="claim" id="mCoinClaim" onclick="claimMission('coins')">진행 중</button></div>
+      <small style="color:var(--muted)">미션 진행도는 이 기기에서 저장돼.</small>
+    </section>
+    <section class="panel"><h2>🎁 출석 보상</h2><p style="font-size:12px;color:var(--muted)">하루에 한 번 출석하고 코인을 받아!</p><button class="claim" onclick="dailyReward()">🎁 출석 보상 받기</button></section>
+  </aside>
+  <section class="column center">
+    <div class="arena" id="arena">
+      <div class="city"></div>
+      <div class="boss-card"><img class="boss-mini" id="bossMini" src="boss1.png" alt="보스" onerror="this.style.opacity='.3'"><div><div class="boss-name" id="bossName">카니지</div><div class="hpbar"><span id="hpBar" style="width:100%"></span></div><div class="hp-label" id="hpText">HP 1,200 / 1,200</div></div></div>
+      <img class="boss-art" id="bossArt" src="boss1.png" alt="보스 이미지" onerror="this.style.display='none'">
+      <div class="boss-placeholder" id="bossPlaceholder">👹</div>
+      <div class="click-zone"><button class="click-orb" id="clickOrb" aria-label="스파이더맨 클릭"><img class="click-skin" id="clickSkin" src="skin1.png" alt="현재 스킨"><span class="click-label">클릭!</span></button><div class="click-info">클릭 보상: <b id="rewardText">+1</b><br>자동 수입: <b id="autoText">초당 0</b></div></div>
+      <div class="boss-taunt"><span id="bossTaunt">카니지</span><small id="tauntText">크하하... 더 덤벼봐...</small></div>
+    </div>
+    <section class="panel"><h2>👹 보스 컨셉 이미지 · 보스 선택</h2><div class="bosses" id="bossChoices"></div></section>
+    <section class="panel"><h2>🕷️ 스킨 상점</h2><div class="skin-grid" id="skinGrid"></div><p style="font-size:11px;color:var(--muted);margin-bottom:0">스킨을 구매하면 클릭 버튼의 스파이더맨이 바뀌어!</p></section>
+  </section>
+  <aside class="column right">
+    <section class="panel"><h2>🛒 스킨 상점</h2><div class="skin-grid" id="skinGridRight"></div><div class="right-box"><strong id="skinStatus">기본 스킨 장착 중</strong><p>스킨마다 클릭 보상이 달라져. 구매한 스킨은 계속 사용할 수 있어.</p></div></section>
+    <section class="panel"><h2>🎁 보스 도전 보상</h2><div class="right-box"><strong>🪙 처치 시: <span class="coin">보스별 최대 5,000만 코인</span></strong><p>보스를 처치할 때마다 보상이 증가해. 보스를 클릭해 공격할 수도 있어.</p></div></section>
+    <section class="panel"><h2>👑 랭크 보상</h2><div class="right-box"><strong id="rankLarge">초보 영웅</strong><p id="rankNext">다음 랭크: 친절한 이웃</p><div class="progress"><span id="rankBar" style="width:0%"></span></div></div></section>
+    <section class="panel"><h2>🏆 업적</h2><div id="achievementList"></div></section>
+    <section class="panel"><h2>ℹ️ 전투 안내</h2><div class="right-box"><p>• 클릭 버튼을 누르면 코인을 얻고 보스를 공격해.<br>• 크리티컬 공격은 코인 보상을 2배·5배·10배로 늘려.<br>• 업그레이드로 클릭 보상과 자동 수입을 강화해.<br>• 진행 상황은 자동 저장돼.</p></div></section>
+  </aside>
+</main>
+<div class="toast" id="toast"></div>
+<script>
+const $=id=>document.getElementById(id);
+
+const skins=[
+ {name:"기본 스파이더맨",file:"skin1.png",price:0,power:1},
+ {name:"어메이징 스파이더맨",file:"skin2.png",price:500,power:2},
+ {name:"아이언 스파이더",file:"skin3.png",price:1000,power:3},
+ {name:"얼티밋 스파이더맨",file:"skin4.png",price:5000,power:5},
+ {name:"스파이더맨 2099",file:"skin5.png",price:20000,power:6},
+ {name:"심비오트 스파이더맨",file:"skin6.png",price:50000,power:8},
+ {name:"코스믹 스파이더맨",file:"skin7.png",price:3000000,power:10}
+];
+
+const bosses=[
+ {name:"카니지",file:"boss1.png",emoji:"👹",hp:120000,reward:200000,taunt:"크하하... 이 정도로 날 이길 수 있을까?"},
+ {name:"베놈",file:"boss2.png",emoji:"👾",hp:500000,reward:500000,taunt:"우린 네가 지칠 때까지 기다린다!"},
+ {name:"그린 고블린",file:"boss3.png",emoji:"🎭",hp:1200000,reward:1200000,taunt:"도시는 이미 내 손안에 있다!"},
+ {name:"닥터 옥토퍼스",file:"boss4.png",emoji:"🦾",hp:3000000,reward:3000000,taunt:"네 공격은 내 기계에 통하지 않는다!"},
+ {name:"멀티버스 파괴자",file:"boss5.png",emoji:"👾",hp:10000000,reward:10000000,taunt:"수많은 세계의 영웅들이 쓰러졌다!"},
+ {name:"최종 보스: 다크 스파이더",file:"boss6.png",emoji:"🔥",hp:50000000,reward:50000000,taunt:"여기까지 온 것을 후회하게 해 주마!"}
+];
+
+const ranks=[
+ {name:"초보 영웅",need:0},
+ {name:"친절한 이웃",need:1000},
+ {name:"뉴욕의 수호자",need:5000},
+ {name:"어벤져스급",need:20000},
+ {name:"멀티버스의 전설",need:100000}
+];
+
+const defaults={
+ coins:0,clicks:0,totalEarned:0,level:1,clickLv:0,autoLv:0,critLv:0,
+ skin:0,owned:[0],boss:0,bossHp:1200,bossKills:0,
+ missionClickClaim:false,missionCoinClaim:false,lastDaily:"",achievements:[]
+};
+
+let game={...defaults,...loadSave()};
+
+// 저장 데이터가 예전 버전이어도 존재하는 스킨 범위 안으로 보정
+game.skin=Math.max(0,Math.min(Number(game.skin)||0,skins.length-1));
+game.owned=[...new Set([0,...(Array.isArray(game.owned)?game.owned:[])])]
+ .filter(i=>Number.isInteger(i)&&i>=0&&i<skins.length);
+
+// 기존 저장 데이터가 있어도 새 보스 체력으로 한 번 초기화
+if(!game.hardModeV2){
+ game.boss=Math.min(Number(game.boss)||0,bosses.length-1);
+ game.bossHp=bosses[game.boss].hp;
+ game.hardModeV2=true;
+}
+
+function loadSave(){
+ try{return JSON.parse(localStorage.getItem("spiderClickerSave"))||{}}
+ catch(e){return {}}
+}
+
+function save(){
+ localStorage.setItem("spiderClickerSave",JSON.stringify(game))
+}
+
+function fmt(n){
+ return Math.floor(n).toLocaleString("en-US")
+}
+
+function clickCost(){
+ return Math.floor(50*Math.pow(1.7,game.clickLv))
+}
+
+function autoCost(){
+ return Math.floor(100*Math.pow(1.75,game.autoLv))
+}
+
+function critCost(){
+ return Math.floor(150*Math.pow(1.9,game.critLv))
+}
+
+// 스킨 배율이 클릭 보상과 보스 공격력에 적용됨
+function clickPower(){
+ return (1+game.clickLv)*skins[game.skin].power
+}
+
+function autoPower(){
+ return game.autoLv*2
+}
+
+function currentRank(){
+ let r=ranks[0];
+ for(const x of ranks)if(game.totalEarned>=x.need)r=x;
+ return r
+}
+
+function toast(msg){
+ const t=$("toast");
+ t.textContent=msg;
+ t.style.display="block";
+ clearTimeout(toast.timer);
+ toast.timer=setTimeout(()=>t.style.display="none",1900)
+}
+
+function floatText(text,x,y){
+ const el=document.createElement("div");
+ el.className="float-text";
+ el.textContent=text;
+ const rect=$("arena").getBoundingClientRect();
+ el.style.left=(x-rect.left)+"px";
+ el.style.top=(y-rect.top)+"px";
+ $("arena").appendChild(el);
+ setTimeout(()=>el.remove(),950)
+}
+
+function hitBoss(damage){
+ game.bossHp-=damage;
+ const art=$("bossArt"),placeholder=$("bossPlaceholder");
+ art.classList.remove("hit");
+ placeholder.classList.remove("hit");
+ void art.offsetWidth;
+ art.classList.add("hit");
+ placeholder.classList.add("hit");
+ $("arena").classList.remove("shake-screen");
+ void $("arena").offsetWidth;
+ $("arena").classList.add("shake-screen");
+
+ if(game.bossHp<=0){
+  const b=bosses[game.boss];
+  game.coins+=b.reward;
+  game.totalEarned+=b.reward;
+  game.bossKills++;
+  toast("💥 "+b.name+" 처치! +"+fmt(b.reward)+" 코인!");
+  game.boss=(game.boss+1)%bosses.length;
+  game.bossHp=bosses[game.boss].hp;
+  renderBossChoices()
+ }
+ render()
+}
+
+function doClick(){
+ game.clicks++;
+ let gain=clickPower();
+ let critRoll=Math.random();
+
+ if(critRoll<Math.min(.03+game.critLv*.04,.55)){
+  const mult=[2,5,10][Math.floor(Math.random()*3)];
+  gain*=mult;
+  toast("💥 크리티컬 x"+mult+"! +"+gain+" 코인")
+ }
+
+ game.coins+=gain;
+ game.totalEarned+=gain;
+
+ const r=$("clickOrb").getBoundingClientRect();
+ floatText("+"+fmt(gain),r.left+r.width/2,r.top+10);
+
+ // 선택한 스킨의 배율만큼 보스에게 피해를 줌
+ hitBoss(Math.max(1,clickPower()));
+ checkAchievements();
+ render()
+}
+
+$("clickOrb").addEventListener("click",doClick);
+
+function buyUpgrade(type){
+ let cost;
+ if(type==="click")cost=clickCost();
+ else if(type==="auto")cost=autoCost();
+ else cost=critCost();
+
+ if(game.coins<cost){
+  toast("코인이 부족해!");
+  return
+ }
+
+ game.coins-=cost;
+ if(type==="click")game.clickLv++;
+ if(type==="auto")game.autoLv++;
+ if(type==="crit")game.critLv++;
+
+ toast("업그레이드 완료!");
+ render()
+}
+
+function dailyReward(){
+ const today=new Date().toLocaleDateString("en-CA");
+ if(game.lastDaily===today){
+  toast("오늘 출석 보상은 이미 받았어!");
+  return
+ }
+ game.lastDaily=today;
+ game.coins+=500;
+ game.totalEarned+=500;
+ toast("🎁 출석 보상 +500 코인!");
+ render()
+}
+
+function claimMission(type){
+ if(type==="clicks"){
+  if(game.clicks<100||game.missionClickClaim){
+   toast(game.missionClickClaim?"이미 완료했어!":"아직 클릭 횟수가 부족해!");
+   return
+  }
+  game.missionClickClaim=true;
+  game.coins+=300;
+  game.totalEarned+=300;
+  toast("미션 완료! +300 코인")
+ }else{
+  if(game.totalEarned<1000||game.missionCoinClaim){
+   toast(game.missionCoinClaim?"이미 완료했어!":"코인을 더 모아 봐!");
+   return
+  }
+  game.missionCoinClaim=true;
+  game.coins+=500;
+  game.totalEarned+=500;
+  toast("미션 완료! +500 코인")
+ }
+ render()
+}
+
+function selectSkin(i){
+ if(!game.owned.includes(i)){
+  if(game.coins<skins[i].price){
+   toast("코인이 부족해!");
+   return
+  }
+  game.coins-=skins[i].price;
+  game.owned.push(i);
+  toast(skins[i].name+" 구매 완료!")
+ }
+ game.skin=i;
+ render()
+}
+
+function selectBoss(i){
+ if(i>game.bossKills){
+  toast("이전 보스를 먼저 처치해 봐!");
+  return
+ }
+ game.boss=i;
+ game.bossHp=bosses[i].hp;
+ render()
+}
+
+function renderSkinGrid(id){
+ $(id).innerHTML=skins.map((s,i)=>`
+  <button class="skin-card ${game.skin===i?"selected":""}" onclick="selectSkin(${i})">
+   <img src="${s.file}" alt="${s.name}" onerror="this.style.opacity='.15'">
+   <span>${s.name}</span>
+   <span style="color:#ffd35a">${game.owned.includes(i)?"보유":fmt(s.price)+" 🪙"}</span>
+   <span style="color:#28d9ff">데미지 ${s.power}배</span>
+  </button>
+ `).join("")
+}
+
+function renderBossChoices(){
+ $("bossChoices").innerHTML=bosses.map((b,i)=>`
+  <button class="boss-choice ${game.boss===i?"active":""}" onclick="selectBoss(${i})">
+   <img src="${b.file}" alt="${b.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+   <span style="display:none;font-size:35px">${b.emoji}</span>
+   <span>${b.name}</span>
+  </button>
+ `).join("")
+}
+
+function renderAchievements(){
+ const list=[
+  {id:"first",name:"첫걸음",desc:"10회 클릭",ok:game.clicks>=10},
+  {id:"clicker",name:"클릭 마스터",desc:"100회 클릭",ok:game.clicks>=100},
+  {id:"rich",name:"코인 재벌",desc:"누적 5,000 코인 획득",ok:game.totalEarned>=5000},
+  {id:"slayer",name:"보스 사냥꾼",desc:"보스 1마리 처치",ok:game.bossKills>=1}
+ ];
+
+ for(const a of list){
+  if(a.ok&&!game.achievements.includes(a.id)){
+   game.achievements.push(a.id);
+   toast("🏆 업적 해금: "+a.name)
+  }
+ }
+
+ $("achievementList").innerHTML=list.map(a=>`
+  <div class="right-box">
+   <strong>${a.ok?"🏆":"🔒"} ${a.name}</strong>
+   <p>${a.desc}${a.ok?" · 달성!":""}</p>
+  </div>
+ `).join("")
+}
+
+function checkAchievements(){
+ renderAchievements()
+}
+
+function showAchievements(){
+ renderAchievements();
+ toast("업적 목록을 확인해 봐!")
+}
+
+function renderBoss(){
+ const b=bosses[game.boss];
+ $("bossName").textContent=b.name;
+ $("bossTaunt").textContent=b.name;
+ $("tauntText").textContent=b.taunt;
+ $("bossMini").src=b.file;
+ $("bossArt").src=b.file;
+ $("bossArt").style.display="";
+ $("bossPlaceholder").textContent=b.emoji;
+ $("hpBar").style.width=Math.max(0,game.bossHp/b.hp*100)+"%";
+ $("hpText").textContent="HP "+fmt(Math.max(0,game.bossHp))+" / "+fmt(b.hp)
+}
+
+function render(){
+ game.level=1+Math.floor(game.totalEarned/1000);
+ $("coins").textContent=fmt(game.coins);
+ $("level").textContent=game.level;
+ $("clicks").textContent=fmt(game.clicks);
+ $("rank").textContent=currentRank().name;
+ $("rankLarge").textContent=currentRank().name;
+
+ const ri=ranks.findIndex(r=>r.name===currentRank().name);
+ const next=ranks[Math.min(ri+1,ranks.length-1)];
+
+ $("rankNext").textContent=ri===ranks.length-1?"최고 랭크 달성!":"다음 랭크: "+next.name;
+ $("rankBar").style.width=ri===ranks.length-1?"100%":Math.min(100,game.totalEarned/next.need*100)+"%";
+
+ $("clickLv").textContent=game.clickLv;
+ $("autoLv").textContent=game.autoLv;
+ $("critLv").textContent=game.critLv;
+ $("clickPower").textContent=clickPower();
+ $("autoPower").textContent=autoPower();
+
+ $("clickBuy").textContent="🪙 "+fmt(clickCost());
+ $("autoBuy").textContent="🪙 "+fmt(autoCost());
+ $("critBuy").textContent="🪙 "+fmt(critCost());
+
+ $("rewardText").textContent="+"+clickPower();
+ $("autoText").textContent="초당 "+autoPower();
+ $("clickSkin").src=skins[game.skin].file;
+
+ $("mClicks").textContent=Math.min(game.clicks,100)+"/100";
+ $("mClickBar").style.width=Math.min(100,game.clicks)+"%";
+ $("mCoins").textContent=Math.min(game.totalEarned,1000)+"/1000";
+ $("mCoinBar").style.width=Math.min(100,game.totalEarned/10)+"%";
+
+ $("mClickClaim").textContent=game.missionClickClaim?"완료!":game.clicks>=100?"보상 받기":"진행 중";
+ $("mCoinClaim").textContent=game.missionCoinClaim?"완료!":game.totalEarned>=1000?"보상 받기":"진행 중";
+
+ $("skinStatus").textContent=skins[game.skin].name+" 장착 중 · 데미지 "+skins[game.skin].power+"배";
+
+ renderBoss();
+ renderSkinGrid("skinGrid");
+ renderSkinGrid("skinGridRight");
+ renderAchievements();
+ save()
+}
+
+function resetGame(){
+ if(confirm("정말 처음부터 다시 시작할까? 저장된 코인과 진행 상황이 사라져.")){
+  game={...defaults,owned:[0],achievements:[]};
+  game.bossHp=bosses[0].hp;
+  save();
+  render();
+  toast("게임을 초기화했어!")
+ }
+}
+
+setInterval(()=>{
+ if(game.autoLv>0){
+  const gain=autoPower();
+  game.coins+=gain;
+  game.totalEarned+=gain;
+  render()
+ }
+},1000);
+
+renderBossChoices();
+render();
+</script>
+</body>
+</html>
